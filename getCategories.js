@@ -14,12 +14,11 @@ async function getCategoryList() {
       let categoryTitle = $(element)[0].attribs["aria-label"];
       let categoryLink = $(element)[0].attribs["href"];
       categoryObject.push({
-
         categoryID: Object.keys(categoryObject).length + 1,
         categoryTitle: categoryTitle,
         categoryLink: categoryLink,
       });
-      // Removing Liquor and Tobacco categories. Liquor has 1 page, tobacco has an age requirement modal. 
+      // Removing Liquor and Tobacco categories. Liquor has 1 page, tobacco has an age requirement modal.
       categoryObject = categoryObject.filter(
         (list) =>
           list.categoryTitle !== "Liquor" && list.categoryTitle !== "Tobacco"
@@ -33,30 +32,30 @@ async function getCategoryList() {
   }
 }
 
-async function getCategoryPages(){
-    try{
-        const categories = await getCategoryList()
-        const promises = categories.map((category, index) => {
-            return axios.get("https://coles.com.au" + category.categoryLink)
-                .then((res) => {
-                    const pageData = res.data;
-                    const $$ = cheerio.load(pageData)
-                    let navBar = $$("ul.coles-targeting-PaginationPaginationUl");
-                    let numOfElements = navBar[0].children.length;
-                    let lastPageNumber = navBar[0].children[numOfElements - 2].children[0].children[0].data;
-                    categories[index].categoryPages = lastPageNumber;
-                })
-        })
-
-        await Promise.all(promises)
-        return categories;
-    }
-
-    catch{
-        console.log("Error getting categories")
-    }
+async function getCategoryPages() {
+  try {
+    const categories = await getCategoryList();
+    const promises = categories.map((category, index) => {
+      return axios
+        .get("https://coles.com.au" + category.categoryLink)
+        .then((res) => {
+          const pageData = res.data;
+          const $$ = cheerio.load(pageData);
+          let navBar = $$("ul.coles-targeting-PaginationPaginationUl");
+          let numOfElements = navBar[0].children.length;
+          let lastPageNumber = Number(
+            navBar[0].children[numOfElements - 2].children[0].children[0].data
+          );
+          categories[index].categoryPages = lastPageNumber;
+        });
+    });
+    await Promise.all(promises);
+    return categories;
+  } catch {
+    console.log("Error getting categories");
+  }
 }
 
-  module.exports = {
-    getCategoryPages
-  }
+module.exports = {
+  getCategoryPages,
+};

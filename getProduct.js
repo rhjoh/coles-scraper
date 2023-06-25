@@ -1,15 +1,15 @@
-// Get product details: product title and current price.
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-const axios = require("axios");
-const cheerio = require("cheerio");
+const url = "https://www.coles.com.au/on-special?page=150";
 
-const url = "https://www.coles.com.au/on-special?page=163";
+async function getProductsByURL(url_param){
 
-let data;
-axios.get(url).then((res) => {
-  data = res.data;
+  const res = await axios.get(url_param);
+  const data = res.data;
+  const $ = cheerio.load(data)
   let productObject = []
-  const $ = cheerio.load(data);
+
 
   $(
     'section[data-testid="product-tile"].coles-targeting-ProductTileProductTileWrapper'
@@ -19,7 +19,13 @@ axios.get(url).then((res) => {
     let productLink = $(element)[0].children[0].children[0].children[1].children[0].attribs['href']
     // Get product code from href
     const regex = /.*-(.*)$/;
-    let productCode = productLink.match(regex)
+    let productCode;
+    if(productLink && productLink.match(regex)){
+      productCode = productLink.match(regex)[1]
+    } else {
+      productCode = ''
+    }
+/*     let productCode = productLink.match(regex) */
     let productAvail;
     let productPrice;
     /* 
@@ -42,20 +48,14 @@ axios.get(url).then((res) => {
       productAvail: productAvail,
       productPrice: productPrice,
       productLink: productLink,
-      productCode: productCode[1]
+      productCode: productCode
     })
   });
-  console.log(productObject)
-});
+return productObject
+}
 
-/*
-Get the product name of the first product tile: 
-console.log($('section[data-testid="product-tile"].coles-targeting-ProductTileProductTileWrapper')[0].children[0].children[0].children[1].children[0].children[0].children[0].data)
+/* getProductsByURL(url).then((res) => console.log(res)) */
 
-      productTitle: $(element)[0].children[0].children[0].children[1].children[0].children[0].children[0].data,
-      productPrice: $(element)[0].children[1].children[0].children[0].children[0].children[0].attribs["aria-label"] 
-
-
-Price: 
-console.log($('section[data-testid="product-tile"].coles-targeting-ProductTileProductTileWrapper')[0].children[1].children[0].children[0].children[0].children[0].attribs['aria-label'])
-*/
+module.exports = {
+  getProductsByURL
+}
