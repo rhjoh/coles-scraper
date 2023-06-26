@@ -1,27 +1,42 @@
 const getCategoryPages = require("./getCategories");
 const getProductsByURL = require("./getProduct");
 
-getCategoryPages.getCategoryPages().then((categories) => {
-  console.log("Getting products for " + categories[2].categoryLink);
-  const requests = [];
-  for (let index = 1; index <= categories[2].categoryPages; index++) {
-    const url =
-      "https://coles.com.au" + categories[2].categoryLink + "?page=" + index;
-    requests.push(getProductsByURL.getProductsByURL(url));
-  }
+async function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  Promise.all(requests).then((pageRequests) => {
-    let categoryProducts = [];
-    pageRequests.forEach((page) => {
-      console.log(page.length);
+async function getAllProduts() {
+  const categories = await getCategoryPages.getCategoryPages();
 
-      page.forEach((pageProducts) => {
-        // Add ID for each product in a category. Add date time. 
-        pageProducts.prodctCatID = Object.keys(categoryProducts).length + 1
-        pageProducts.productScrapeDate = new Date().toISOString()
-        categoryProducts.push(pageProducts);
+  for (let category of categories) {
+    console.log(category.categoryTitle);
+    console.log(category.categoryPages);
+
+    let allProdsInCat = [];
+    for (let index = 1; index <= category.categoryPages; index++) {
+      const url =
+        "https://coles.com.au" + category.categoryLink + "?page=" + index;
+      console.log("Getting data from " + url);
+
+      const pageProducts = await getProductsByURL.getProductsByURL(url);
+      const scrapeDate = new Date().toISOString()
+      pageProducts.forEach((product) => {
+        allProdsInCat.push({
+          productCategory: category.categoryTitle,
+          categoryPage: index,
+          productTitle: product.productTitle,
+          productAvail: product.productAvail,
+          productLink: product.productLink,
+          productCode: product.productCode,
+          scrapeDateTime: scrapeDate
+        });
       });
-    });
-    console.log(categoryProducts);
-  });
-});
+
+      // Delay incase of rate limiting. 
+      // await delay(150);
+    }
+    console.log(allProdsInCat)
+  }
+}
+
+getAllProduts();
