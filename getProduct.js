@@ -28,13 +28,14 @@ async function getProductsByURL(url_param){
       TODO: Some products show as unavailable but have a price listed. Need to account for this. 
     */
     if($(element)[0].children[1].children[1].children[0].children[0].attribs['class'].includes("product__unavailable")){
-/*       console.log("Product unavailable") */
       productAvail = 0;
       productPrice = null
     }
     else{
       productAvail = 1;
       productPrice = $(element)[0].children[1].children[0].children[0].children[0].children[0].children[0].data 
+      const priceRegex = /\$(.+)/
+      productPrice = productPrice.match(priceRegex)[1]
     }
 
     productObject.push({
