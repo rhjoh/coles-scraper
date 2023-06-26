@@ -43,7 +43,7 @@ async function getProductsByURL(url_param){
     }
 
     productObject.push({
-      productID: Object.keys(productObject).length + 1,
+/*       productID: Object.keys(productObject).length + 1, */
       productTitle: productTitle,
       productAvail: productAvail,
       productPrice: productPrice,

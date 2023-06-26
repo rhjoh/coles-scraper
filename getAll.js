@@ -14,18 +14,14 @@ getCategoryPages.getCategoryPages().then((categories) => {
     let categoryProducts = [];
     pageRequests.forEach((page) => {
       console.log(page.length);
+
       page.forEach((pageProducts) => {
+        // Add ID for each product in a category. Add date time. 
+        pageProducts.prodctCatID = Object.keys(categoryProducts).length + 1
+        pageProducts.productScrapeDate = new Date().toISOString()
         categoryProducts.push(pageProducts);
       });
     });
-    console.log(categoryProducts.length);
-    console.dir(categoryProducts, { maxArrayLength: null });
-    // This logs the whole array, otherwise console output is trimmed.
-    // Note that productID isn't unique now. There's a productID = 2 on every page, for ex.
+    console.log(categoryProducts);
   });
-
-  // Waiting for all axios requests to complete. The requests array is in order of pages.
-  // Previously was out of order due to async GET requests.
-  // This leaves us with n number of arrays for n number of pages in the category.
-  // Need to concat all objects from all arrays into a single categoryProductObject?
 });
