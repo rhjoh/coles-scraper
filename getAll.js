@@ -12,6 +12,7 @@ async function delay(ms) {
 
 async function getAllProduts() {
   const categories = await getCategoryPages.getCategoryPages();
+  await client.connect();
   for (let category of categories) {
     for (let index = 1; index <= category.categoryPages; index++) {
       const url =
@@ -22,7 +23,6 @@ async function getAllProduts() {
       // Use scrapeDate or date of mongo insert?
 
       const scrapeDate = new Date().toISOString();
-      await client.connect();
       for (product of pageProducts) {
         const existingDocument = await collection.findOne({
           productCode: product.productCode,
@@ -61,8 +61,8 @@ async function getAllProduts() {
       // Delay incase of rate limiting.
       // await delay(150);
     }
-    await client.close();
   }
+  await client.close();
 }
 
 getAllProduts();
