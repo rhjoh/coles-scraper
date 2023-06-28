@@ -13,13 +13,18 @@ async function getProductsByURL(url_param){
 
     let productTitle = $(element)[0].children[0].children[0].children[1].children[0].children[0].children[0].data  
     let productLink = $(element)[0].children[0].children[0].children[1].children[0].attribs['href']
+
+    if(productTitle == "Promoted"){
+      console.log("Found promoted")
+    }
+
     // Get product code from href
     const regex = /.*-(.*)$/;
     let productCode;
     if(productLink && productLink.match(regex)){
       productCode = productLink.match(regex)[1]
     } else {
-      productCode = ''
+      productCode = null;
     }
     let productAvail;
     let productPrice;
