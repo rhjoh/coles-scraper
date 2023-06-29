@@ -1,5 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { MongoExpiredSessionError } = require('mongodb');
 
 async function getProductsByURL(url_param){
   const res = await axios.get(url_param);

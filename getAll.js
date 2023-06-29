@@ -19,8 +19,13 @@ async function getAllProduts() {
         "https://coles.com.au" + category.categoryLink + "?page=" + index;
       console.log("Getting data from " + url);
 
+      let retryCount = 0;
+      let maxRetries = 3;
+      while(retryCount <= maxRetries){
+        try {
       const pageProducts = await getProductsByURL.getProductsByURL(url);
-      // Use scrapeDate or date of mongo insert?
+      // Need a try ... catch here to handle 500's. 
+      // Could use a while(n retries) loop which would start above getProductsByURL(?)
 
       const scrapeDate = new Date().toISOString();
       for (product of pageProducts) {
@@ -95,7 +100,18 @@ async function getAllProduts() {
       // Delay incase of rate limiting.
       // await delay(150);
     }
-  }
+    catch (error){
+      console.log("Error - will try again in 2000ms")
+      console.log(error.response.status)
+      console.log(error.response.statusText)
+      console.log(error.response.config.url)
+      await delay(2000)
+      retryCount++
+      
+    }
+  } 
+}
+}
   await client.close();
 }
 
