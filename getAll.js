@@ -30,19 +30,35 @@ async function getAllProduts() {
 
         if (existingDocument) {
           console.log("Found existing item: " + product.productCode+ " - updating.");
-          collection.updateOne(
+          if(category.categoryTitle == "Specials"){
+          await collection.updateOne(
             { productCode: product.productCode },
             { $push: {
               priceHistory: { 
                   productPrice: product.productPrice,
                   scrapeDate: scrapeDate,
+                  isSpecial: true
                 }
               }
             }
           );
+          } else {
+          await collection.updateOne(
+            { productCode: product.productCode },
+            { $push: {
+              priceHistory: { 
+                  productPrice: product.productPrice,
+                  scrapeDate: scrapeDate,
+                  isSpecial: false
+                }
+              }
+            }
+          );
+          }
         } else {
           console.log("Product not found: " + product.productCode + " - inserting");
-          collection.insertOne({
+          if(category.categoryTitle == "Specials"){
+          await collection.insertOne({
             productCategory: category.categoryTitle,
             categoryPage: index,
             productTitle: product.productTitle,
@@ -53,9 +69,27 @@ async function getAllProduts() {
             lastScrapeDateTime: scrapeDate, 
             priceHistory: [{
               productPrice: product.productPrice,
-              scrapeDate: scrapeDate
+              scrapeDate: scrapeDate,
+              isSpecial: true
             }]
           })
+         } else {
+          await collection.insertOne({
+            productCategory: category.categoryTitle,
+            categoryPage: index,
+            productTitle: product.productTitle,
+            productAvail: product.productAvail,
+            productLink: product.productLink,
+            productCode: product.productCode,
+            productPrice: product.productPrice,
+            lastScrapeDateTime: scrapeDate, 
+            priceHistory: [{
+              productPrice: product.productPrice,
+              scrapeDate: scrapeDate,
+              isSpecial: false
+            }]
+          })
+         }
         }
       }
       // Delay incase of rate limiting.
