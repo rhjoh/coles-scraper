@@ -3,6 +3,11 @@ const cheerio = require('cheerio');
 const { MongoExpiredSessionError } = require('mongodb');
 
 async function getProductsByURL(url_param){
+  let retryCount = 0;
+  let maxRetries = 3;
+
+  while(retryCount <= maxRetries){
+    try {
   const res = await axios.get(url_param);
   const data = res.data;
   const $ = cheerio.load(data)
@@ -15,10 +20,6 @@ async function getProductsByURL(url_param){
     let productTitle = $(element)[0].children[0].children[0].children[1].children[0].children[0].children[0].data  
     let productLink = $(element)[0].children[0].children[0].children[1].children[0].attribs['href']
 
-    if(productTitle == "Promoted"){
-      console.log("Found promoted")
-    }
-
     // Get product code from href
     const regex = /.*-(.*)$/;
     let productCode;
@@ -29,10 +30,6 @@ async function getProductsByURL(url_param){
     }
     let productAvail;
     let productPrice;
-    /* 
-      Check for product__unavailable class on ProductTile.
-      TODO: Some products show as unavailable but have a price listed. Need to account for this. 
-    */
     if($(element)[0].children[1].children[1].children[0].children[0].attribs['class'].includes("product__unavailable")){
       productAvail = 0;
       productPrice = null
@@ -53,6 +50,14 @@ async function getProductsByURL(url_param){
     })
   });
 return productObject
+  } catch (error) {
+    console.log("Error - trying again")
+    console.log(error.response.status)
+    console.log(error.response.statusText)
+    console.log(error.response.config.url)
+    retryCount++
+  }
+} 
 }
 
 module.exports = {
