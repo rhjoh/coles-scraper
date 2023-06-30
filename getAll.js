@@ -22,14 +22,23 @@ async function getAllProduts() {
       try {
       const pageProducts = await getProductsByURL.getProductsByURL(url);
 
-      const scrapeDate = new Date().toISOString();
+      const scrapeDate = new Date();
       for (product of pageProducts) {
         const existingDocument = await collection.findOne({
           productCode: product.productCode,
         });
 
-        if (existingDocument) {
-          console.log("Found existing item: " + product.productCode+ " - updating.");
+        // Only update if last scrape time is > n hours 
+        let priceHistoryLatest;
+        let lastTime;
+        if(existingDocument){
+          priceHistoryLatest = Object.keys(existingDocument.priceHistory).length - 1
+          lastTime = existingDocument.priceHistory[priceHistoryLatest].scrapeDate
+        }
+        const timeDiff = 6 * 60 * 60 * 1000 // 6 hours in millis 
+        // WARN: If you run the scraper before [timeDiff] has elapsed since last scrap it will insert duplicates via the else statement. 
+        if (existingDocument && (scrapeDate - lastTime) > timeDiff) {
+          console.log("Found existing item: " + product.productCode +". Last scrape " + (scrapeDate - lastTime) / 1000+ " seconds ago. Updating.")
           if(category.categoryTitle == "Specials"){
           await collection.updateOne(
             { productCode: product.productCode },
