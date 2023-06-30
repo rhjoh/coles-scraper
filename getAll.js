@@ -33,7 +33,17 @@ async function getAllProduts() {
           if(category.categoryTitle == "Specials"){
           await collection.updateOne(
             { productCode: product.productCode },
-            { $push: {
+            { 
+              $set: {
+              productCategory: category.categoryTitle,
+              categoryPage: index,
+              productTitle: product.productTitle,
+              productAvail: product.productAvail,
+              productLink: product.productLink,
+              productCode: product.productCode,
+              productPrice: product.productPrice,
+              },
+              $push: {
               priceHistory: { 
                   productPrice: product.productPrice,
                   scrapeDate: scrapeDate,
@@ -45,7 +55,17 @@ async function getAllProduts() {
           } else {
           await collection.updateOne(
             { productCode: product.productCode },
-            { $push: {
+            { 
+              $set: {
+              productCategory: category.categoryTitle,
+              categoryPage: index,
+              productTitle: product.productTitle,
+              productAvail: product.productAvail,
+              productLink: product.productLink,
+              productCode: product.productCode,
+              productPrice: product.productPrice,
+              },
+              $push: {
               priceHistory: { 
                   productPrice: product.productPrice,
                   scrapeDate: scrapeDate,
@@ -97,6 +117,7 @@ async function getAllProduts() {
     }
     catch (error){
       console.log("Error - will try again in 2000ms")
+      console.log(error)
     }
   } 
 }
