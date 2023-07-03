@@ -28,68 +28,67 @@ async function getAllProduts() {
           productCode: product.productCode,
         });
 
-        // Only update if last scrape time is > n hours 
+        // Check time since last push to priceHistory
         let priceHistoryLatest;
         let lastTime;
         if(existingDocument){
           priceHistoryLatest = Object.keys(existingDocument.priceHistory).length - 1
           lastTime = existingDocument.priceHistory[priceHistoryLatest].scrapeDate
         }
-        const timeDiff = 6 * 60 * 60 * 1000 // 6 hours in millis 
+        const timeDiff =  6 * 60 * 60 * 1000 // 6 hours in millis 
+        const needsUpdating = (scrapeDate - lastTime) > timeDiff
         // WARN: If you run the scraper before [timeDiff] has elapsed since last scrap it will insert duplicates via the else statement. 
-        if (existingDocument && (scrapeDate - lastTime) > timeDiff) {
-          console.log("Found existing item: " + product.productCode +". Last scrape " + (scrapeDate - lastTime) / 1000+ " seconds ago. Updating.")
-          if(category.categoryTitle == "Specials"){
-          await collection.updateOne(
-            { productCode: product.productCode },
-            { 
-              $set: {
-              productCategory: category.categoryTitle,
-              categoryPage: index,
-              productTitle: product.productTitle,
-              productAvail: product.productAvail,
-              productLink: product.productLink,
-              productCode: product.productCode,
-              productPrice: product.productPrice,
-              },
-              $push: {
-              priceHistory: { 
-                  productPrice: product.productPrice,
-                  scrapeDate: scrapeDate,
-                  isSpecial: true
+        if (existingDocument && needsUpdating) {
+
+            console.log("Found " + product.productCode + " which needs updating. ")
+
+            if(category.categoryTitle == "Specials"){ 
+              await collection.updateOne(
+              { productCode: product.productCode },
+              { 
+                $set: {
+                productTitle: product.productTitle,
+                productAvail: product.productAvail,
+                productLink: product.productLink,
+                productCode: product.productCode,
+                productPrice: product.productPrice,
+                },
+                $push: {
+                priceHistory: { 
+                    productPrice: product.productPrice,
+                    scrapeDate: scrapeDate,
+                    isSpecial: true
+                  }
                 }
               }
-            }
-          );
-          } else {
-          await collection.updateOne(
-            { productCode: product.productCode },
-            { 
-              $set: {
-              productCategory: category.categoryTitle,
-              categoryPage: index,
-              productTitle: product.productTitle,
-              productAvail: product.productAvail,
-              productLink: product.productLink,
-              productCode: product.productCode,
-              productPrice: product.productPrice,
-              },
-              $push: {
-              priceHistory: { 
-                  productPrice: product.productPrice,
-                  scrapeDate: scrapeDate,
-                  isSpecial: false
+            );
+              } else {
+              // If exists and not special: 
+                await collection.updateOne(
+              { productCode: product.productCode },
+              { 
+                $set: {
+                productCategory: category.categoryTitle,
+                productTitle: product.productTitle,
+                productAvail: product.productAvail,
+                productLink: product.productLink,
+                productCode: product.productCode,
+                productPrice: product.productPrice,
+                },
+                $push: {
+                priceHistory: { 
+                    productPrice: product.productPrice,
+                    scrapeDate: scrapeDate,
+                    isSpecial: false
+                  }
                 }
               }
-            }
-          );
+            );
           }
         } else {
           console.log("Product not found: " + product.productCode + " - inserting");
           if(category.categoryTitle == "Specials"){
           await collection.insertOne({
-            productCategory: category.categoryTitle,
-            categoryPage: index,
             productTitle: product.productTitle,
             productAvail: product.productAvail,
             productLink: product.productLink,
@@ -105,7 +104,6 @@ async function getAllProduts() {
          } else {
           await collection.insertOne({
             productCategory: category.categoryTitle,
-            categoryPage: index,
             productTitle: product.productTitle,
             productAvail: product.productAvail,
             productLink: product.productLink,
