@@ -115,6 +115,7 @@ async function getAllProduts() {
             productCode: product.productCode,
             productPrice: product.productPrice,
             lastScrapeDateTime: scrapeDate, 
+            productImage: imageURL,
             priceHistory: [{
               productPrice: product.productPrice,
               scrapeDate: scrapeDate,
