@@ -35,7 +35,7 @@ async function getAllProduts() {
           priceHistoryLatest = Object.keys(existingDocument.priceHistory).length - 1
           lastTime = existingDocument.priceHistory[priceHistoryLatest].scrapeDate
         }
-        const timeDiff = 5 * 60 * 1000 // 6 hours in millis 
+        const timeDiff = 6 * 60 * 60 * 1000 // 6 hours in millis 
         const needsUpdating = (scrapeDate - lastTime) > timeDiff
         // WARN: If you run the scraper before [timeDiff] has elapsed since last scrap it will insert duplicates via the else statement. 
         if (existingDocument && needsUpdating) {
