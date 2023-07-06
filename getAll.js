@@ -45,6 +45,7 @@ async function getAllProduts() {
         const needsUpdating = (scrapeDate - lastTime) > timeDiff
         // WARN: If you run the scraper before [timeDiff] has elapsed since last scrap it will insert duplicates via the else statement. 
         if (existingDocument && needsUpdating) {
+          // Need to handle case where productCode is null
 
             console.log("Found " + product.productCode + " which needs updating. ")
 
@@ -103,6 +104,7 @@ async function getAllProduts() {
             productCode: product.productCode,
             productPrice: product.productPrice,
             lastScrapeDateTime: scrapeDate, 
+            productImage: imageURL,
             priceHistory: [{
               productPrice: product.productPrice,
               scrapeDate: scrapeDate,
