@@ -56,6 +56,7 @@ async function getAllProduts() {
                 productLink: product.productLink,
                 productCode: product.productCode,
                 productPrice: product.productPrice,
+                productImage: imageURL,
                 },
                 $push: {
                 priceHistory: { 
