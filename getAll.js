@@ -29,8 +29,10 @@ async function getAllProduts() {
         });
 
         // Example: https://productimages.coles.com.au/productimages/4/4770699.jpg?w=200
+        if(product.productCode){
         const productCodeFirst = (product.productCode).split('')[0]
         const imageURL = `https://productimages.coles.com.au/productimages/${productCodeFirst}/${product.productCode}.jpg?w=200`
+        }
         
         // Check time since last push to priceHistory
         let priceHistoryLatest;
