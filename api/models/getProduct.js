@@ -21,26 +21,52 @@ async function getProductByID(productCode) {
   }
 }
 
-async function getProductByTitle(productTitle) {
+async function getProductsByTitle(productTitle) {
+    // Return an array of products with only the latest priceHistory object. 
   try {
     await client.connect();
-    const regexPattern = new RegExp(`.*${productTitle}.*`, 'i')
-    const foundCursor = await collection.find({
-      productTitle: {$regex: regexPattern },
-    });
-    const foundProducts = await foundCursor.toArray()
-    await client.close();
+    const regexPattern = new RegExp(`.*${productTitle}.*`, "i");
 
-    if (!foundProducts) {
-      throw new Error("Error getting title");
-    }
-    return foundProducts
+    const foundDocuments = await collection
+      .find({
+        productTitle: { $regex: regexPattern },
+      })
+      .toArray();
+    
+      if(!foundDocuments){
+        throw new Error("Mongo error: " + error.message)
+      }
+
+    // Aggregate query basically selects the most recent scrapeDate. 
+    const foundProducts = await collection.aggregate([
+      { $match: { _id: { $in: foundDocuments.map((doc) => doc._id) } } },
+      { $unwind: "$priceHistory" },
+      { $sort: { "priceHistory.scrapeDate": -1 } },
+      {
+        $group: {
+          _id: "$_id",
+          productCategory: { $first: "$productCategory" },
+          productTitle: { $first: "$productTitle" },
+          productAvail: { $first: "$productAvail" },
+          productLink: { $first: "$productLink" },
+          productCode: { $first: "$productCode" },
+          productPrice: { $first: "$productPrice" },
+          lastScrapeDateTime: { $first: "$lastScrapeDateTime" },
+          productImage: { $first: "$productImage" },
+          priceHistory: { $first: "$priceHistory" },
+        },
+      },
+    ]).toArray();
+    await client.close()
+
+    console.log(typeof(foundProducts))
+    return foundProducts;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 }
 
 module.exports = {
   getProductByID,
-  getProductByTitle,
+  getProductsByTitle,
 };
